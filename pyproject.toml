@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "wakeupai"
+version = "0.1.0"
+description = "A Raspberry Pi based alarm clock using OpenAI API to generate and speak personalized morning feeds."
+authors = ["Your Name <you@example.com>"] # Please replace with your actual name and email
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+Flask = "^3.0.0" # For web UI
+python-dotenv = "^1.0.0" # For loading .env files
+openai = "^1.0.0" # For OpenAI API for TTS and feeds
+"RPi.GPIO" = { version = "^0.7.1", optional = true } # For Raspberry Pi hardware interaction
+gunicorn = { version = "^21.2.0", optional = true } # For production web server
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.0"
+pytest-mock = "^3.10.0"
+
+[tool.poetry.extras]
+pi = ["RPi.GPIO"] # Allows `poetry install -E pi` - ensure name matches declaration
+prod_server = ["gunicorn"]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
