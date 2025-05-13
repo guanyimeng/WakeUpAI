@@ -1,9 +1,9 @@
 import os
-import logging # Added
+import logging 
 from openai import OpenAI
-from wakeupai.config import OPENAI_API_KEY, FEEDS_NEWS_ARTICLE_COUNT # NEWS_API_KEY could be used here in future
+from ..config import OPENAI_API_KEY, FEEDS_NEWS_ARTICLE_COUNT # NEWS_API_KEY could be used here in future
 
-logger = logging.getLogger(__name__) # Added
+logger = logging.getLogger(__name__) 
 
 # Initialize OpenAI client
 if not OPENAI_API_KEY:
@@ -18,12 +18,11 @@ else:
         client = None
 
 # Target character count for feeds to stay under 5 mins of speech (approx 700-800 words, ~4000 chars)
-# OpenAI recommends max_tokens for completion, but for chat models, prompt engineering is key.
-# We will aim for a response of about 300-500 words in the prompts.
-MAX_FEED_WORDS = 400 # Aiming for a bit shorter to be safe
+# We will aim for a response of about 300-500 words in the prompts. = 400, Aiming for a bit shorter to be safe
+MAX_FEED_WORDS = 400 
 
 # Model to use for web search enabled queries
-WEB_SEARCH_MODEL = "gpt-4.1" # As per user's example
+WEB_SEARCH_MODEL = "gpt-4.1"
 
 def _fetch_web_search_content_from_openai(input_prompt: str, country_code: str | None = None) -> str | None:
     """
@@ -41,6 +40,7 @@ def _fetch_web_search_content_from_openai(input_prompt: str, country_code: str |
 
     tools_payload = [{"type": "web_search_preview"}]
 
+    # setup Web search location
     if country_code and country_code.lower() != "world":
         tools_payload[0]["user_location"] = {
             "type": "approximate",
@@ -50,6 +50,7 @@ def _fetch_web_search_content_from_openai(input_prompt: str, country_code: str |
     else:
         logger.debug("Web search location not specified (global search).")
 
+    # Request to AI API
     try:
         logger.debug(f"Sending prompt to OpenAI for web search (model: {WEB_SEARCH_MODEL}, first 50 chars): '{input_prompt[:50]}...'")
         response = client.responses.create(
@@ -59,6 +60,7 @@ def _fetch_web_search_content_from_openai(input_prompt: str, country_code: str |
         )
         logger.debug(f"Raw response from OpenAI web search: {response}")
 
+        # Extract text response
         if isinstance(response, list) and len(response) > 1:
             message_part = response[1]
             if isinstance(message_part, dict) and message_part.get("type") == "message":
@@ -94,31 +96,32 @@ def _fetch_web_search_content_from_openai(input_prompt: str, country_code: str |
         logger.error(f"Error querying OpenAI with web search: {e}", exc_info=True)
         return None
 
-def _ask_openai(prompt: str, temperature: float = 0.7) -> str | None:
-    """Helper function to query the OpenAI Chat API (non-web-search)."""
-    if not client:
-        logger.error("OpenAI client not initialized for feeds. Cannot query.")
-        return None
-    try:
-        logger.debug(f"Sending prompt to OpenAI for feed generation (first 50 chars): '{prompt[:50]}...'")
-        completion = client.chat.completions.create(
-            model="gpt-3.5-turbo", # Or consider gpt-4 if available and needed, though more expensive
-            messages=[
-                {"role": "system", "content": f"You are a helpful assistant that provides concise information suitable for a morning audio feed. Please keep responses under {MAX_FEED_WORDS} words."},
-                {"role": "user", "content": prompt}
-            ],
-            temperature=temperature,
-            # max_tokens can be used to further limit output length if necessary,
-            # but good prompting is often more effective for quality.
-            # max_tokens=MAX_FEED_WORDS * 2, # Rough estimate: 1 token ~ 0.75 words, so give some leeway
-        )
-        response_text = completion.choices[0].message.content.strip()
-        logger.debug(f"Received response from OpenAI for feed (first 50 chars): '{response_text[:50]}...'")
-        return response_text
-    except Exception as e:
-        logger.error(f"Error querying OpenAI for feed generation: {e}", exc_info=True)
-        return None
+# def _ask_openai(prompt: str, temperature: float = 0.7) -> str | None:
+#     """Helper function to query the OpenAI Chat API (non-web-search)."""
+#     if not client:
+#         logger.error("OpenAI client not initialized for feeds. Cannot query.")
+#         return None
+#     try:
+#         logger.debug(f"Sending prompt to OpenAI for feed generation (first 50 chars): '{prompt[:50]}...'")
+#         completion = client.chat.completions.create(
+#             model="gpt-3.5-turbo", # Or consider gpt-4 if available and needed, though more expensive
+#             messages=[
+#                 {"role": "system", "content": f"You are a helpful assistant that provides concise information suitable for a morning audio feed. Please keep responses under {MAX_FEED_WORDS} words."},
+#                 {"role": "user", "content": prompt}
+#             ],
+#             temperature=temperature,
+#             # max_tokens can be used to further limit output length if necessary,
+#             # but good prompting is often more effective for quality.
+#             # max_tokens=MAX_FEED_WORDS * 2, # Rough estimate: 1 token ~ 0.75 words, so give some leeway
+#         )
+#         response_text = completion.choices[0].message.content.strip()
+#         logger.debug(f"Received response from OpenAI for feed (first 50 chars): '{response_text[:50]}...'")
+#         return response_text
+#     except Exception as e:
+#         logger.error(f"Error querying OpenAI for feed generation: {e}", exc_info=True)
+#         return None
 
+# Prompt engineering: Different topics
 def _generate_daily_news_feed(country: str = "world") -> str | None:
     """
     Generates a daily news summary using OpenAI's web search capability.
@@ -170,6 +173,7 @@ def _generate_custom_prompt_feed(user_prompt: str) -> str | None:
     # For custom prompts, country_code is typically not needed, resulting in a global search.
     return _fetch_web_search_content_from_openai(enhanced_prompt)
 
+# Feed generators
 FEED_GENERATORS = {
     "daily_news": _generate_daily_news_feed,
     "topic_facts": _generate_topic_facts_feed,
@@ -231,7 +235,6 @@ def generate_feed_content(feed_type: str, options: dict = None) -> str | None:
         return None
 
 # =============================================================================================================================
-
 if __name__ == '__main__':
     # Setup basic logging for the __main__ test if not already configured
     if not logging.getLogger().handlers:
@@ -244,7 +247,7 @@ if __name__ == '__main__':
 
     import json # For saving results to JSON
 
-    TEST_OUTPUT_DIR = "test_generated_feeds"
+    TEST_OUTPUT_DIR = "test_output/test_generated_feeds"
     os.makedirs(TEST_OUTPUT_DIR, exist_ok=True)
     logger.info(f"Test outputs will be saved in '{TEST_OUTPUT_DIR}' directory.")
 

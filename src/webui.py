@@ -335,7 +335,7 @@ if __name__ == "__main__":
     alarm_thread.start()
 
     # Create dummy templates if they don't exist for basic testing without full HTML
-    template_dir = os.path.join(os.path.dirname(__file__), "..", "templates")
+    template_dir = os.path.join(os.path.dirname(__file__), "templates")
     if not os.path.exists(template_dir):
         os.makedirs(template_dir)
     

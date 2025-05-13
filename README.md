@@ -51,7 +51,7 @@ A Raspberry Pi based Alarm, using OpenAI API to generate feeds and speak them ou
 
 ## Usage
 
-(Details on how to run the application, e.g., `python -m wakeupai.webui` or using uvicorn/gunicorn if it's a web app, will go here.)
+(Details on how to run the application, e.g., `python -m src.webui` or using uvicorn/gunicorn if it's a web app, will go here.)
 
 ## Configuration
 

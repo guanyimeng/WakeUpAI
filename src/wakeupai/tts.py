@@ -1,9 +1,9 @@
 import os
-import logging # Added
+import logging 
 from openai import OpenAI # Ensure this library is added via Poetry
-from wakeupai.config import OPENAI_API_KEY, TTS_VOICE_MODEL, TTS_MAX_DURATION_SECONDS # TTS_MAX_DURATION_SECONDS is for guidance
+from ..config import OPENAI_API_KEY, TTS_VOICE_MODEL, TTS_MAX_DURATION_SECONDS # TTS_MAX_DURATION_SECONDS is for guidance
 
-logger = logging.getLogger(__name__) # Added
+logger = logging.getLogger(__name__)
 
 # Initialize the OpenAI client globally or within functions as preferred.
 if not OPENAI_API_KEY:
@@ -17,6 +17,7 @@ else:
         logger.critical(f"Failed to initialize OpenAI client for TTS: {e}", exc_info=True)
         client = None
 
+# Generate TTS
 def text_to_speech_openai(text_input: str, output_filepath: str) -> bool:
     """
     Generates speech from the given text using OpenAI's TTS API and saves it to a file.
@@ -80,6 +81,7 @@ def text_to_speech_openai(text_input: str, output_filepath: str) -> bool:
                 logger.error(f"Could not remove partially created TTS file {output_filepath}: {remove_e}", exc_info=True)
         return False
 
+# =============================================================================================================================
 if __name__ == '__main__':
     # Setup basic logging for the __main__ test if not already configured
     if not logging.getLogger().handlers:
@@ -95,9 +97,9 @@ if __name__ == '__main__':
         logger.warning("OpenAI API key not configured or client not initialized. Cannot run TTS test.")
     else:
         logger.info(f"Using TTS Voice Model: {TTS_VOICE_MODEL}")
-        sample_text = "Hello, this is a test of the WakeUpAI text-to-speech system using OpenAI."
+        sample_text = "Good morning! Here are today's top news stories:\n\n**1. President Trump Begins Middle East Tour in Saudi Arabia**\n\nPresident Donald Trump has commenced a four-day visit to the Middle East, starting in Saudi Arabia. The agenda includes discussions on Iran's nuclear program, the Gaza conflict, and bolstering U.S.-Saudi business ties, with potential Saudi investments in the U.S. estimated at up to $600 billion. Trump's envoy, Steve Witkoff, is also engaging with families of hostages in Israel, following the recent release of American-Israeli hostage Edan Alexander. ([apnews.com](https://apnews.com/article/26f9104dd733e07136ff255c6917d66f?utm_source=openai))\n\n**2. EPA Announces Major Deregulation Efforts**\n\nThe Environmental Protection Agency has initiated the largest deregulation action in U.S. history, aiming to roll back numerous water and air quality regulations and defund billions allocated to green energy initiatives. This move includes reconsidering the \"endangerment finding,\" which classifies greenhouse gases as a public health threat. EPA Administrator Lee Zeldin stated, \"Today, the green new scam ends.\" ([democracynow.org](https://www.democracynow.org/2025/3/13/headlines?utm_source=openai))\n\n**3. Russia Reclaims Territory Amid Ceasefire Talks**\n\nRussian forces have recaptured nearly 90% of the territory in the Kursk region that was previously seized by Ukraine. This development comes as U.S. special envoy Steve Witkoff arrives in Moscow for ceasefire negotiations. Russia has presented demands including Ukraine's non-membership in NATO and international recognition of Crimea and other regions as Russian territory. ([democracynow.org](https://www.democracynow.org/2025/3/13/headlines?utm_source=openai))\n\n**4. Record-Breaking Tornado Outbreak in the U.S.**\n\nBetween March 13 and 16, the United States experienced a historic tornado outbreak, with 117 tornadoes reported across the Midwest and Eastern regions. This event is the largest on record for March, resulting in 43 fatalities and over 247 injuries. The outbreak caused significant damage and power outages affecting more than 670,000 residents. ([en.wikipedia.org](https://en.wikipedia.org/wiki/Tornado_outbreak_of_March_13%E2%80%9316%2C_2025?utm_source=openai))\n\n**5. Stock Market Update**\n\nAs of 1:31 PM UTC, the S&P 500 (SPY) is trading at $583.10, up 0.02% from the previous close. The Dow Jones Industrial Average (DIA) stands at $422.69, down 0.36%, while the Nasdaq-100 (QQQ) is at $508.84, up 0.20%. In the tech sector, Apple Inc. (AAPL) is trading at $211.18, up 0.19%, Microsoft Corp. (MSFT) at $446.30, down 0.66%, and Alphabet Inc. (GOOGL) at $158.13, down 0.21%.\n\nStay informed and have a great day!"
         
-        test_output_dir = os.path.join(os.path.dirname(__file__), "..", "test_audio_output") # TEMP_AUDIO_DIR from alarm_handler might be better
+        test_output_dir = os.path.join("test_output/test_audio_output") # TEMP_AUDIO_DIR from alarm_handler might be better
         if not os.path.exists(test_output_dir):
             try:
                 os.makedirs(test_output_dir)

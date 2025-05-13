@@ -4,18 +4,18 @@ import time
 import datetime
 import logging
 
-from wakeupai.alarm import Alarm # For type hinting
-from wakeupai.feeds import generate_feed_content
-from wakeupai.tts import text_to_speech_openai
-from wakeupai.audio_player import play_audio_file
-from wakeupai.config import OPENAI_API_KEY, TTS_VOICE_MODEL # To check if core services are available
+from .alarm import Alarm # For type hinting
+from ..wakeupai.feeds import generate_feed_content
+from ..wakeupai.tts import text_to_speech_openai
+from ..hardware.audio_player import play_audio_file
+from ..config import OPENAI_API_KEY, TTS_VOICE_MODEL # To check if core services are available
 
 logger = logging.getLogger(__name__)
 
 # This directory will store the temporary audio files for alarms.
 # It should be writable by the application.
 # Using a subdirectory within the project for simplicity, ensure it exists or is created.
-TEMP_AUDIO_DIR = os.path.join(os.path.dirname(__file__), "..", "temp_alarm_audio")
+TEMP_AUDIO_DIR = os.path.join("test_output/temp_alarm_audio")
 if not os.path.exists(TEMP_AUDIO_DIR):
     try:
         os.makedirs(TEMP_AUDIO_DIR)
