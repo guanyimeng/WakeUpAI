@@ -1,4 +1,3 @@
-# e:\Dev\WakeUpAI\wakeupai\alarm_handler.py
 import os
 import tempfile
 import time

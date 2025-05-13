@@ -1,4 +1,3 @@
-# e:\Dev\WakeUpAI\wakeupai\tts.py
 import os
 import logging # Added
 from openai import OpenAI # Ensure this library is added via Poetry

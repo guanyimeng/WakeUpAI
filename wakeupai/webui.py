@@ -226,7 +226,7 @@ def edit_alarm(alarm_id):
                     return render_template("edit_alarm.html", alarm=alarm, available_feed_types=available_feed_types, openai_configured=bool(OPENAI_API_KEY))
                 feed_options["prompt"] = prompt
             
-alarm_manager.update_alarm(
+            alarm_manager.update_alarm(
                 alarm_id,
                 alarm_time=alarm_time_obj,
                 label=label,
@@ -305,7 +305,7 @@ def cleanup_on_exit():
     
     if IS_RASPBERRY_PI or (isinstance(hardware_manager.GPIO, object) and hardware_manager.GPIO.__class__.__name__ == 'MockGPIO'):
          # Only call cleanup if GPIO was likely initialized (real or mock)
-        if hardware_manager and hasattr(hardware_manager, 'cleanup_gpio')):
+        if hardware_manager and hasattr(hardware_manager, 'cleanup_gpio'):
             hardware_manager.cleanup_gpio() # This method should have its own logging
     logger.info("Cleanup complete. Goodbye.")
 

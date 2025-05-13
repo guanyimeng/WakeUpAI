@@ -1,4 +1,3 @@
-# e:\Dev\WakeUpAI\wakeupai\config.py
 import os
 from dotenv import load_dotenv
 import logging

@@ -1,4 +1,3 @@
-# e:\Dev\WakeUpAI\wakeupai\audio_player.py
 import subprocess
 import os
 import time

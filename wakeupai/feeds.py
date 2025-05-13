@@ -1,4 +1,3 @@
-# e:\Dev\WakeUpAI\wakeupai\feeds.py
 import os
 import logging # Added
 from openai import OpenAI
