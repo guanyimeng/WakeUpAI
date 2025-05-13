@@ -5,9 +5,9 @@ import os
 import logging
 import shutil # For cleaning up test directories
 
-from wakeupai.tts import text_to_speech_openai, client as tts_openai_client # Import the client directly for patching
-from wakeupai import tts # To modify tts.client for testing initialization failure
-from wakeupai.config import TTS_VOICE_MODEL
+from src.wakeupai.tts import text_to_speech_openai, client as tts_openai_client # Import the client directly for patching
+from src.wakeupai import tts # To modify tts.client for testing initialization failure
+from src.config import TTS_VOICE_MODEL
 
 TEST_TTS_OUTPUT_DIR = "test_tts_temp_output"
 
@@ -53,7 +53,7 @@ class TestTTSModule(unittest.TestCase):
         result = text_to_speech_openai("Some text", "")
         self.assertFalse(result)
 
-    @patch('wakeupai.tts.client.audio.speech.create')
+    @patch('src.wakeupai.tts.client.audio.speech.create')
     def test_tts_successful_generation(self, mock_speech_create):
         """Test successful speech generation and file saving."""
         # Ensure the client is mocked if it was None initially due to no API key
@@ -87,7 +87,7 @@ class TestTTSModule(unittest.TestCase):
             mock_response.stream_to_file.assert_called_once_with(output_file)
             mock_makedirs.assert_called_once_with(TEST_TTS_OUTPUT_DIR) # Check if dir creation was attempted
 
-    @patch('wakeupai.tts.client.audio.speech.create')
+    @patch('src.wakeupai.tts.client.audio.speech.create')
     def test_tts_api_error(self, mock_speech_create):
         """Test handling of OpenAI API error during speech generation."""
         if tts.client is None: tts.client = MagicMock(); tts.client.audio.speech.create = mock_speech_create
@@ -107,7 +107,7 @@ class TestTTSModule(unittest.TestCase):
         # For this test, as stream_to_file is not called on error, we just check it doesn't exist.
         self.assertFalse(os.path.exists(output_file), "Output file should not exist after API error if not created, or be removed if partially created.")
 
-    @patch('wakeupai.tts.client.audio.speech.create')
+    @patch('src.wakeupai.tts.client.audio.speech.create')
     @patch('os.remove') # Mock os.remove to check its called
     def test_tts_cleanup_on_streaming_error(self, mock_os_remove, mock_speech_create):
         """Test that a partially created file is removed if stream_to_file fails."""
@@ -127,7 +127,7 @@ class TestTTSModule(unittest.TestCase):
         self.assertFalse(result)
         mock_os_remove.assert_called_once_with(output_file)
 
-    @patch('wakeupai.tts.client.audio.speech.create')
+    @patch('src.wakeupai.tts.client.audio.speech.create')
     def test_tts_directory_creation_failure(self, mock_speech_create):
         """Test TTS failure if output directory cannot be created."""
         if tts.client is None: tts.client = MagicMock(); tts.client.audio.speech.create = mock_speech_create

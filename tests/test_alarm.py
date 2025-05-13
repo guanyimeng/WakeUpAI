@@ -1,4 +1,3 @@
-# e:\Dev\WakeUpAI\tests\test_alarm.py
 import unittest
 import os
 import datetime
@@ -8,7 +7,7 @@ from unittest.mock import patch, MagicMock
 
 # Adjust the path if necessary to import from the wakeupai package
 # This assumes tests are run from the project root or wakeupai is in PYTHONPATH
-from wakeupai.alarm import Alarm, AlarmManager
+from src.alarm.alarm import Alarm, AlarmManager
 
 # Test alarms file path
 TEST_ALARMS_FILE = "test_alarms_unit.json"
@@ -321,7 +320,7 @@ class TestAlarmManagerClass(unittest.TestCase):
         # Override current_datetime_override for check_and_trigger_alarms if it supports it
         # For now, assuming AlarmManager.check_and_trigger_alarms uses datetime.datetime.now()
         # So we need to control "now" using patch
-        with patch('wakeupai.alarm.datetime.datetime') as mock_dt:
+        with patch('src.alarm.alarm.datetime.datetime') as mock_dt:
             # Mock datetime.now() to return the trigger time
             mock_dt.now.return_value = trigger_dt 
             mock_dt.side_effect = lambda *args, **kw: datetime.datetime(*args, **kw) # Allow other datetime uses

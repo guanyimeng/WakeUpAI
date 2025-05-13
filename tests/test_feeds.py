@@ -3,7 +3,7 @@ import unittest
 from unittest.mock import patch, MagicMock, ANY
 import logging
 
-from wakeupai.feeds import (
+from src.wakeupai.feeds import (
     generate_feed_content,
     _ask_openai, 
     _generate_daily_news_feed,
@@ -13,7 +13,7 @@ from wakeupai.feeds import (
 )
 # Temporarily set client to a MagicMock for all tests in this module if it was None
 # This helps if feeds.py is imported and OPENAI_API_KEY isn't set during test discovery.
-from wakeupai import feeds
+from src.wakeupai import feeds
 if feeds.client is None:
     feeds.client = MagicMock()
 
@@ -30,7 +30,7 @@ class TestFeedsModule(unittest.TestCase):
         logging.disable(logging.NOTSET) # Re-enable logging
         feeds.client = self.original_feeds_client # Restore original
 
-    @patch('wakeupai.feeds.client.chat.completions.create')
+    @patch('src.wakeupai.feeds.client.chat.completions.create')
     def test_ask_openai_success(self, mock_create_completion):
         """Test _ask_openai successfully returns content."""
         expected_response = "This is a test response from OpenAI."
@@ -57,7 +57,7 @@ class TestFeedsModule(unittest.TestCase):
         system_prompt_content = mock_create_completion.call_args[1]['messages'][0]['content']
         self.assertIn(str(MAX_FEED_WORDS), system_prompt_content)
 
-    @patch('wakeupai.feeds.client.chat.completions.create')
+    @patch('src.wakeupai.feeds.client.chat.completions.create')
     def test_ask_openai_api_error(self, mock_create_completion):
         """Test _ask_openai returns None on API error."""
         mock_create_completion.side_effect = Exception("API Error")
@@ -72,7 +72,7 @@ class TestFeedsModule(unittest.TestCase):
         self.assertIsNone(response)
         feeds.client = original_client # Restore
 
-    @patch('wakeupai.feeds._ask_openai')
+    @patch('src.wakeupai.feeds._ask_openai')
     def test_generate_daily_news_feed(self, mock_ask_openai):
         """Test _generate_daily_news_feed constructs prompt and calls _ask_openai."""
         expected_news = "Today's news: ..."
@@ -87,7 +87,7 @@ class TestFeedsModule(unittest.TestCase):
         self.assertIn(country, actual_prompt)
         self.assertIn("news", actual_prompt.lower())
 
-    @patch('wakeupai.feeds._ask_openai')
+    @patch('src.wakeupai.feeds._ask_openai')
     def test_generate_topic_facts_feed(self, mock_ask_openai):
         """Test _generate_topic_facts_feed for success and missing topic."""
         expected_facts = "Facts about Llamas: ..."
@@ -107,7 +107,7 @@ class TestFeedsModule(unittest.TestCase):
         self.assertIsNone(facts_no_topic)
         mock_ask_openai.assert_not_called() # Should not call if topic is empty
 
-    @patch('wakeupai.feeds._ask_openai')
+    @patch('src.wakeupai.feeds._ask_openai')
     def test_generate_custom_prompt_feed(self, mock_ask_openai):
         """Test _generate_custom_prompt_feed."""
         expected_response = "Custom response."
@@ -124,7 +124,7 @@ class TestFeedsModule(unittest.TestCase):
         self.assertIsNone(response_no_prompt)
         mock_ask_openai.assert_not_called()
 
-    @patch('wakeupai.feeds._generate_daily_news_feed')
+    @patch('src.wakeupai.feeds._generate_daily_news_feed')
     def test_generate_feed_content_daily_news(self, mock_news_generator):
         """Test generate_feed_content for daily_news type."""
         expected_content = "Mocked News"
@@ -134,7 +134,7 @@ class TestFeedsModule(unittest.TestCase):
         self.assertEqual(content, expected_content)
         mock_news_generator.assert_called_once_with(country="Testland")
 
-    @patch('wakeupai.feeds._generate_topic_facts_feed')
+    @patch('src.wakeupai.feeds._generate_topic_facts_feed')
     def test_generate_feed_content_topic_facts(self, mock_topic_generator):
         """Test generate_feed_content for topic_facts type."""
         expected_content = "Mocked Facts"
@@ -150,7 +150,7 @@ class TestFeedsModule(unittest.TestCase):
         self.assertIsNone(content_no_topic)
         mock_topic_generator.assert_not_called()
 
-    @patch('wakeupai.feeds._generate_custom_prompt_feed')
+    @patch('src.wakeupai.feeds._generate_custom_prompt_feed')
     def test_generate_feed_content_custom_prompt(self, mock_custom_generator):
         """Test generate_feed_content for custom_prompt type."""
         expected_content = "Mocked Custom Response"
@@ -171,7 +171,7 @@ class TestFeedsModule(unittest.TestCase):
         content = generate_feed_content("non_existent_feed_type", {})
         self.assertIsNone(content)
     
-    @patch('wakeupai.feeds._ask_openai')
+    @patch('src.wakeupai.feeds._ask_openai')
     def test_generate_feed_content_length_warning(self, mock_ask_openai):
         """Test that a warning is logged for excessively long content."""
         # MAX_FEED_WORDS is 400. Warning threshold is MAX_FEED_WORDS * 7 = 2800 chars
@@ -179,7 +179,7 @@ class TestFeedsModule(unittest.TestCase):
         mock_ask_openai.return_value = long_content
         
         # We need to capture log messages for this test
-        with self.assertLogs(logger='wakeupai.feeds', level='WARNING') as cm:
+        with self.assertLogs(logger='src.wakeupai.feeds', level='WARNING') as cm:
             content = generate_feed_content("daily_news", {"country": "longtextland"})
             self.assertEqual(content, long_content)
         
