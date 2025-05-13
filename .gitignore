@@ -1,6 +1,8 @@
-test_alarms.json
 .env
+test_alarms.json
+test_generated_feeds
 test_audio_output
 temp_alarm_audio
 templates
+**/__pycache__/
 *.pyc
