@@ -56,7 +56,7 @@ if not IS_RASPBERRY_PI or not GPIOZeroButton:
     GPIOZeroButton = MockButton
     GPIO_LIB = "mock"
 
-from ..config import (
+from src.config import (
     BUTTON_STOP_ALARM_PIN,
     BUTTON_SNOOZE_PIN,
     BUTTON_SPEAK_TIME_PIN
@@ -254,7 +254,7 @@ if __name__ == '__main__':
     test_speak_time_pin = BUTTON_SPEAK_TIME_PIN if BUTTON_SPEAK_TIME_PIN > 0 else 22
 
     # Patch config module if needed (for test only)
-    import ..config as config_module
+    import src.config as config_module
     original_pins = {
         'BUTTON_STOP_ALARM_PIN': config_module.BUTTON_STOP_ALARM_PIN,
         'BUTTON_SNOOZE_PIN': config_module.BUTTON_SNOOZE_PIN,
