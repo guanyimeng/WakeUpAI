@@ -28,7 +28,7 @@ def play_audio_file(filepath: str):
         _playback_process = subprocess.Popen(command)
         return True
     except FileNotFoundError:
-        logger.error(f"AudioPlayer: mpg123 command not found. Please ensure it is installed and in PATH for Raspberry Pi playback.", exc_info=True)
+        logger.error(f"AudioPlayer: mpg123 command not found. ", exc_info=True)
         _playback_process = None
         return False
     except subprocess.CalledProcessError as e:
@@ -96,18 +96,14 @@ if __name__ == '__main__':
 
         logger.info("nTesting non-blocking playback:")
         play_audio_file(real_audio_filepath)
-        if not IS_RASPBERRY_PI:
-            logger.info("(Mock non-blocking call returned immediately, playback 'continues' in background)")
-            time.sleep(6) # Give mock non-blocking playback time to 'finish'
-        else:
-            logger.info("(Real non-blocking call started, you might hear audio now if mpg123 is working)")
-            time.sleep(2) # Give it a moment to start
+        logger.info("(Real non-blocking call started, you might hear audio now if mpg123 is working)")
+        time.sleep(2) # Give it a moment to start
 
     logger.info("nTesting with a non-existent file:")
     play_audio_file("non_existent_audio_file.mp3")
     
     logger.info("--- Audio Player Test Complete ---")
 
-    # sleep(5)
-
-    # stop_audio()
+    # Wait 10 seconds to kill
+    time.sleep(10)
+    stop_audio()
