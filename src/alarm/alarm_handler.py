@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 # This directory will store the temporary audio files for alarms.
 # It should be writable by the application.
 # Using a subdirectory within the project for simplicity, ensure it exists or is created.
-TEMP_AUDIO_DIR = os.path.join("test_output/temp_alarm_audio")
+TEMP_AUDIO_DIR = os.path.join("src/audio_files/temp_alarm_audio")
 if not os.path.exists(TEMP_AUDIO_DIR):
     try:
         os.makedirs(TEMP_AUDIO_DIR)
@@ -45,8 +45,8 @@ def process_single_triggered_alarm(alarm: Alarm, system_is_enabled: bool = True)
 
     if not OPENAI_API_KEY:
         logger.error("OpenAI API key not configured. Cannot generate feed or speech for alarm '{alarm.label}'.")
-        # Play a default beep or generic sound here if desired
-        # play_audio_file("path/to/default_alarm_sound.mp3") 
+        # Play a default sound here if desired
+        play_audio_file("src/audio_files/default_alarm_sound.mp3") 
         return
 
     # 1. Generate Feed Content
@@ -55,8 +55,8 @@ def process_single_triggered_alarm(alarm: Alarm, system_is_enabled: bool = True)
 
     if not feed_text:
         logger.warning(f"Failed to generate feed content for '{alarm.label}'. Playing a generic sound or silence.")
-        # Play a default beep or generic sound here if desired
-        # play_audio_file("path/to/default_alarm_sound_if_feed_fails.mp3") 
+        # Play a default sound here if desired
+        play_audio_file("src/audio_files/default_alarm_sound.mp3") 
         return
 
     logger.debug(f"Feed content for '{alarm.label}' (first 80 chars): '{feed_text[:80]}...'")
@@ -75,7 +75,8 @@ def process_single_triggered_alarm(alarm: Alarm, system_is_enabled: bool = True)
 
     if not tts_success:
         logger.warning(f"Failed to generate speech for '{alarm.label}'. Playing a generic sound or silence.")
-        # Play a default beep or generic sound here if desired
+        # Play a default sound here if desired
+        play_audio_file("src/audio_files/default_alarm_sound.mp3") 
         return
 
     # 3. Play Audio
@@ -88,14 +89,14 @@ def process_single_triggered_alarm(alarm: Alarm, system_is_enabled: bool = True)
         logger.warning(f"Failed to play audio for '{alarm.label}' (File: {temp_audio_filepath}). Player might have logged more details.")
 
     # 4. Cleanup Temporary Audio File
-    try:
-        if os.path.exists(temp_audio_filepath):
-            os.remove(temp_audio_filepath)
-            logger.debug(f"Cleaned up temporary audio file: {temp_audio_filepath}")
-    except Exception as e:
-        logger.error(f"Error cleaning up temporary audio file {temp_audio_filepath}: {e}", exc_info=True)
+    # try:
+    #     if os.path.exists(temp_audio_filepath):
+    #         os.remove(temp_audio_filepath)
+    #         logger.debug(f"Cleaned up temporary audio file: {temp_audio_filepath}")
+    # except Exception as e:
+    #     logger.error(f"Error cleaning up temporary audio file {temp_audio_filepath}: {e}", exc_info=True)
     
-    logger.info(f"--- Finished processing alarm: '{alarm.label}' ---")
+    # logger.info(f"--- Finished processing alarm: '{alarm.label}' ---")
 
 
 if __name__ == '__main__':
