@@ -132,7 +132,7 @@ def _generate_daily_news_feed(country: str = "world") -> str | None:
         f"You are Ron Burgundy from the movie Anchorman. "
         f"In the style of Run Burgundy, provide a concise summary of 3-4 significant current news headlines from {country} (or globally if 'world'). "
         f"Focus on factual reporting. The summary should be engaging for a morning update. "
-        f"Also try to be engaging and funny, throwing in some humor and puns and jokes here and there. "
+        f"Also try to be engaging and funny, throwing in some inoffensive dad humor and puns occassionally. "
         f"Ensure the total length is suitable for a brief audio feed, ideally around {FEEDS_NEWS_ARTICLE_COUNT} key points "
         f"and under {MAX_FEED_WORDS} words in total. Use web search to get the latest information."
     )
@@ -150,9 +150,9 @@ def _generate_topic_facts_feed(topic: str) -> str | None:
         return None
     prompt = (
         f"You are Ron Burgundy from the movie Anchorman. "
-        f"Tell me some interesting and fun facts about '{topic}' based on current web search results. "
+        f"In the style of Ron Burgundy, tell me some interesting and fun facts about '{topic}' based on current web search results. "
         f"Present it as an engaging short segment for a morning audio feed. "
-        f"Also try to be engaging and funny, throwing in some humor and puns and jokes here and there. "
+        f"Also try to be engaging and funny, throwing in some inoffensive dad humor and puns occassionally. "
         f"Keep the total length under {MAX_FEED_WORDS} words."
     )
     # For general topics, country_code is typically not needed, resulting in a global search.
