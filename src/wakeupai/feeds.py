@@ -1,9 +1,9 @@
 import os
-import logging 
+import logging
 from openai import OpenAI
 from ..config import OPENAI_API_KEY, FEEDS_NEWS_ARTICLE_COUNT # NEWS_API_KEY could be used here in future
 
-logger = logging.getLogger(__name__) 
+logger = logging.getLogger(__name__)
 
 # Initialize OpenAI client
 if not OPENAI_API_KEY:
@@ -19,7 +19,7 @@ else:
 
 # Target character count for feeds to stay under 5 mins of speech (approx 700-800 words, ~4000 chars)
 # We will aim for a response of about 300-500 words in the prompts. = 400, Aiming for a bit shorter to be safe
-MAX_FEED_WORDS = 400 
+MAX_FEED_WORDS = 400
 
 # Model to use for web search enabled queries
 WEB_SEARCH_MODEL = "gpt-4.1"
@@ -85,7 +85,7 @@ def _fetch_web_search_content_from_openai(input_prompt: str, country_code: str |
              return response.output_text.strip()
         else:
             logger.error(f"Unexpected response structure from OpenAI web search: {response}")
-        
+
         return None
 
     except AttributeError as e:
@@ -129,8 +129,10 @@ def _generate_daily_news_feed(country: str = "world") -> str | None:
         country (str): The country for news focus (e.g., "US", "UK"), or "world" for global.
     """
     prompt = (
-        f"Provide a concise summary of 3-4 significant current news headlines from {country} (or globally if 'world'). "
+        f"You are Ron Burgundy from the movie Anchorman. "
+        f"In the style of Run Burgundy, provide a concise summary of 3-4 significant current news headlines from {country} (or globally if 'world'). "
         f"Focus on factual reporting. The summary should be engaging for a morning update. "
+        f"Also try to be engaging and funny, throwing in some humor and puns and jokes here and there. "
         f"Ensure the total length is suitable for a brief audio feed, ideally around {FEEDS_NEWS_ARTICLE_COUNT} key points "
         f"and under {MAX_FEED_WORDS} words in total. Use web search to get the latest information."
     )
@@ -147,8 +149,10 @@ def _generate_topic_facts_feed(topic: str) -> str | None:
         logger.error("No topic provided for topic facts feed.")
         return None
     prompt = (
+        f"You are Ron Burgundy from the movie Anchorman. "
         f"Tell me some interesting and fun facts about '{topic}' based on current web search results. "
         f"Present it as an engaging short segment for a morning audio feed. "
+        f"Also try to be engaging and funny, throwing in some humor and puns and jokes here and there. "
         f"Keep the total length under {MAX_FEED_WORDS} words."
     )
     # For general topics, country_code is typically not needed, resulting in a global search.
@@ -163,7 +167,7 @@ def _generate_custom_prompt_feed(user_prompt: str) -> str | None:
     if not user_prompt:
         logger.error("No user prompt provided for custom feed.")
         return None
-    
+
     # We can prepend a general instruction to the user's prompt.
     enhanced_prompt = (
         f"Based on current web search results, provide a response for the following request. "
@@ -223,7 +227,7 @@ def generate_feed_content(feed_type: str, options: dict = None) -> str | None:
     except Exception as e_gen:
         logger.error(f"Exception during '{feed_type}' generation with options {options}: {e_gen}", exc_info=True)
         return None
-    
+
     if content:
         logger.debug(f"Successfully generated content for '{feed_type}'. Length: {len(content)} chars.")
         # Basic length check (OpenAI should mostly respect the prompt, but good to have a fallback)
@@ -239,7 +243,7 @@ if __name__ == '__main__':
     # Setup basic logging for the __main__ test if not already configured
     if not logging.getLogger().handlers:
         logging.basicConfig(
-            level=logging.DEBUG, 
+            level=logging.DEBUG,
             format="%(asctime)s - %(levelname)s - [%(module)s:%(lineno)d] - %(message)s",
             datefmt="%Y-%m-%d %H:%M:%S"
         )
@@ -261,7 +265,7 @@ if __name__ == '__main__':
         if news_feed:
             logger.info(f"Generated News Feed (first 100 chars):\n{news_feed[:100]}...")
             logger.info(f"Approx. word count: {len(news_feed.split())}")
-            
+
             file_path = os.path.join(TEST_OUTPUT_DIR, f"daily_news_{news_options['country']}.json")
             data_to_save = {"feed_type": "daily_news", "options": news_options, "content": news_feed}
             try:
@@ -311,7 +315,7 @@ if __name__ == '__main__':
                 logger.error(f"Failed to save custom prompt feed to {file_path}: {e}")
         else:
             logger.error("Failed to generate custom prompt feed.")
-        
+
         logger.info("\n--- Testing Invalid Feed Type ---")
         invalid_feed = generate_feed_content("unknown_feed_type")
         if not invalid_feed: # This means it correctly returned None
