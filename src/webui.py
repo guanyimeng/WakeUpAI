@@ -11,7 +11,7 @@ from fastapi.templating import Jinja2Templates
 from pathlib import Path
 from typing import List, Optional
 
-# Assuming your project structure is e:DevWakeUpAI
+
 # Adjust these paths if your structure is different
 SRC_DIR = Path(__file__).parent.resolve() # Should be e:DevWakeUpAIsrc
 PROJECT_ROOT = SRC_DIR.parent # Should be e:DevWakeUpAI
