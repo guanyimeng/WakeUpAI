@@ -1,4 +1,3 @@
-# e:\Dev\WakeUpAI\wakeupai\hardware.py
 import time
 import datetime
 import os
@@ -66,9 +65,10 @@ from src.config import (
 DEBOUNCE_TIME = 0.3
 
 class HardwareManager:
-    def __init__(self, alarm_manager, tts_speak_function):
+    def __init__(self, alarm_manager, tts_speak_function, audio_play_function):
         self.alarm_manager = alarm_manager
         self.tts_speak_function = tts_speak_function
+        self.audio_play_function = audio_play_function
         self.system_enabled = True # Overall system enabled state, can be toggled by button
         self._buttons = []
         logger.info("HardwareManager initialized.")

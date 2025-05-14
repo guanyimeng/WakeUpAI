@@ -401,7 +401,7 @@ class AlarmManager:
 # =============================================================================================================================
 if __name__ == '__main__':
     # Example Usage:
-    alarms_file_path = "test_alarms.json" # Use a test-specific file
+    alarms_file_path = "test_output/test_alarms.json" # Use a test-specific file
     # Clean up old test file if it exists, for a fresh run each time for some tests
     # For testing persistence, you might want to comment out the remove line sometimes
     if os.path.exists(alarms_file_path):
