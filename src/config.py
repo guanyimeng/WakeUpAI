@@ -60,7 +60,7 @@ WEB_UI_PORT = int(os.getenv("WEB_UI_PORT", 8000))
 # --- Hardware Configuration (Raspberry Pi - GPIO pins) ---
 # These are placeholders and depend on your actual wiring.
 # Using BCM numbering convention for GPIO pins.
-BUTTON_ENABLE_DISABLE_PIN = int(os.getenv("BUTTON_ENABLE_DISABLE_PIN", 0)) # Example GPIO pin
+BUTTON_STOP_ALARM_PIN = int(os.getenv("BUTTON_STOP_ALARM_PIN", 0)) # Example GPIO pin
 BUTTON_SNOOZE_PIN = int(os.getenv("BUTTON_SNOOZE_PIN", 0))         # Example GPIO pin
 BUTTON_SPEAK_TIME_PIN = int(os.getenv("BUTTON_SPEAK_TIME_PIN", 0))   # Example GPIO pin
 

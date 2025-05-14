@@ -98,7 +98,7 @@ def process_single_triggered_alarm(alarm: Alarm, system_is_enabled: bool = True)
     
     # logger.info(f"--- Finished processing alarm: '{alarm.label}' ---")
 
-
+# =============================================================================================================================
 if __name__ == '__main__':
     print("--- Alarm Handler Test ---")
 

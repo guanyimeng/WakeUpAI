@@ -398,6 +398,7 @@ class AlarmManager:
         
         return triggered_alarms_now
 
+# =============================================================================================================================
 if __name__ == '__main__':
     # Example Usage:
     alarms_file_path = "test_alarms.json" # Use a test-specific file
