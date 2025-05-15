@@ -43,7 +43,7 @@ if LOG_LEVEL not in VALID_LOG_LEVELS:
 TTS_MAX_DURATION_SECONDS = int(os.getenv("TTS_MAX_DURATION_SECONDS", 5 * 60))
 # Voice or model to use for TTS (this will depend on the TTS library chosen)
 # Valid OpenAI voices: "alloy", "echo", "fable", "onyx", "nova", "shimmer"
-TTS_VOICE_MODEL = os.getenv("TTS_VOICE_MODEL", "alloy") # Example, changed to a valid default
+TTS_VOICE_MODEL = os.getenv("TTS_VOICE_MODEL", "ash") # Example, changed to a valid default
 
 # --- Feed Generation Configuration (Example) ---
 # Default number of news articles to fetch
