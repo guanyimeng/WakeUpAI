@@ -50,6 +50,41 @@ class HardwareManager:
 
     # Removed _speak_feedback method entirely
 
+    def _speak_feedback(self, text_to_say: str):
+        if not self.tts_speak_function:
+            logger.warning("HardwareManager: No TTS function provided, cannot speak feedback.")
+            return
+
+        temp_audio_file = None
+        try:
+            # Create a temporary file to store the TTS output
+            with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as tmpfile:
+                temp_audio_file = tmpfile.name
+            
+            # Generate speech to the temporary file
+            # Assuming tts_speak_function is text_to_speech_openai which needs output_filepath
+            tts_success = self.tts_speak_function(text_input=text_to_say, output_filepath=temp_audio_file)
+            
+            if tts_success:
+                logger.info(f"HardwareManager: Playing TTS feedback: '{text_to_say}' from {temp_audio_file}")
+                # Play the generated audio file.
+                # Note: play_audio_file from audio_player can take stop_event,
+                # but for short feedback, it might not be necessary.
+                # If feedback sounds can be long, consider passing a stop_event here.
+                play_audio_file(filepath=temp_audio_file, wait_for_completion=True)
+            else:
+                logger.warning(f"HardwareManager: TTS generation failed for: '{text_to_say}'")
+
+        except Exception as e:
+            logger.error(f"HardwareManager: Error in TTS feedback for '{text_to_say}': {e}", exc_info=True)
+        finally:
+            if temp_audio_file and os.path.exists(temp_audio_file):
+                try:
+                    os.remove(temp_audio_file)
+                    logger.debug(f"HardwareManager: Cleaned up TTS temp file: {temp_audio_file}")
+                except Exception as e_del:
+                    logger.error(f"HardwareManager: Error deleting TTS temp file {temp_audio_file}: {e_del}")
+
     def handle_stop_alarm_button(self):
         time.sleep(0.05) 
         logger.info("Button Pressed: Stop Alarm detected.")
