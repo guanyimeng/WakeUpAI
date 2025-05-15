@@ -5,3 +5,4 @@ test_audio_output
 temp_alarm_audio
 **/__pycache__/
 *.pyc
+templates
