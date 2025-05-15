@@ -87,7 +87,6 @@ class AlarmTask:
             # We only play default or log generic failure if it wasn't a user-initiated stop.
             if not self.stop_event.is_set():
                 logger.warning(f"Playback failed for '{self.name}' (File: {temp_audio_filepath}) and not due to user stop. Playing default sound if configured.")
-                # Consider if _play_default_sound should also use stop_event if it can be long
                 self._play_default_sound() 
             else:
                 logger.info(f"Playback for '{self.name}' was stopped by user request.")

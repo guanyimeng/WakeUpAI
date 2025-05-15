@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 _playback_process: Optional[subprocess.Popen] = None
 
-def play_audio_file(filepath: str, wait_for_completion: bool = False, stop_event: Optional[Event] = None) -> bool:
+def play_audio_file(filepath: str, wait_for_completion: bool = True, stop_event: Optional[Event] = None) -> bool:
     global _playback_process
 
     if _playback_process and _playback_process.poll() is None:
@@ -99,38 +99,53 @@ if __name__ == '__main__':
                         format="%(asctime)s - %(levelname)s - [%(name)s:%(lineno)d] - %(message)s",
                         datefmt="%Y-%m-%d %H:%M:%S")
     logger = logging.getLogger(__name__)
-    logger.info("Audio_player.py script running for a simple test.")
+    logger.info("Audio_player.py script running for tests.")
     
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) # Moves up to src directory
-    test_file = os.path.join(base_dir, "default", "default_alarm_sound.mp3") 
+    # Determine the correct base directory to find the default alarm sound
+    # Assuming this script is in src/hardware, and default_alarm_sound.mp3 is in src/default
+    try:
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        base_dir = os.path.dirname(script_dir) # This should be the 'src' directory
+        test_file = os.path.join(base_dir, "default", "default_alarm_sound.mp3")
+    except NameError: # __file__ is not defined (e.g. in an interactive session not running as script)
+        logger.warning("Could not determine test file path using __file__, attempting relative path.")
+        # Fallback for environments where __file__ might not be defined as expected
+        # This might be fragile depending on the CWD when the script is run.
+        test_file = os.path.join("src", "default", "default_alarm_sound.mp3") 
+
+    logger.info(f"Looking for test audio file at: {test_file}")
     
     if os.path.exists(test_file):
         logger.info(f"--- Test 1: Blocking play, stop with event after 3s ---")
         event = Event()
-        def stop_it():
+        def stop_it_thread_func():
             time.sleep(3)
             logger.info("Test thread: Setting stop event!")
             event.set()
         
         import threading
-        t = threading.Thread(target=stop_it)
-        t.start()
+        stopper_thread = threading.Thread(target=stop_it_thread_func)
+        
+        logger.info("Test Main: Starting blocking playback for Test 1...")
+        stopper_thread.start()
         play_audio_file(test_file, wait_for_completion=True, stop_event=event)
-        t.join()
+        stopper_thread.join()
         logger.info("--- Test 1 Finished ---")
 
-        time.sleep(1)
-        logger.info(f"--- Test 2: Blocking play, let it finish ---")
+        time.sleep(1) # Pause between tests
+        logger.info(f"--- Test 2: Blocking play, let it finish (no event set) ---")
         play_audio_file(test_file, wait_for_completion=True, stop_event=Event()) # New event, won't be set
         logger.info("--- Test 2 Finished ---")
 
-        time.sleep(1)
+        time.sleep(1) # Pause between tests
         logger.info(f"--- Test 3: Non-blocking play, stop with global stop_audio() after 2s ---")
-        play_audio_file(test_file, wait_for_completion=False)
+        play_audio_file(test_file, wait_for_completion=False) # Non-blocking
+        logger.info("Test Main: Non-blocking playback started for Test 3. Waiting 2s...")
         time.sleep(2)
         stop_audio()
+        logger.info("Test Main: stop_audio() called for Test 3.")
         logger.info("--- Test 3 Finished ---")
     else:
         logger.warning(f"Test audio file not found: {test_file}, skipping __main__ playback tests.")
 
-    logger.info("Simple audio_player.py test finished.")
+    logger.info("Audio_player.py tests finished.")
