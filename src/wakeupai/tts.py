@@ -1,5 +1,5 @@
 import os
-import logging 
+import logging
 from openai import OpenAI # Ensure this library is added via Poetry
 from ..config import OPENAI_API_KEY, TTS_VOICE_MODEL, TTS_MAX_DURATION_SECONDS # TTS_MAX_DURATION_SECONDS is for guidance
 
@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 # Initialize the OpenAI client globally or within functions as preferred.
 if not OPENAI_API_KEY:
     logger.critical("OPENAI_API_KEY not configured for TTS. TTS functionality will not work.")
-    client = None 
+    client = None
 else:
     try:
         client = OpenAI(api_key=OPENAI_API_KEY)
@@ -53,15 +53,16 @@ def text_to_speech_openai(text_input: str, output_filepath: str) -> bool:
                 return False # Cannot save file if dir creation fails
 
         logger.info(f"Generating speech for text (first 50 chars): '{text_input[:50]}...' to {output_filepath}")
-        
+
         # OpenAI TTS API call
         # Refer to OpenAI documentation for the latest parameters and models.
         # model="tts-1" or "tts-1-hd"
         # voice can be one of "alloy", "echo", "fable", "onyx", "nova", "shimmer"
         response = client.audio.speech.create(
-            model="tts-1",      # Standard quality, good for most cases. "tts-1-hd" for higher quality.
+            model="gpt-4o-mini-tts",      # Standard quality, good for most cases. "tts-1-hd" for higher quality.
             voice=TTS_VOICE_MODEL, # From config.py, e.g., "alloy"
             input=text_input,
+            instructions="Speak like Ron Burgundy from Anchorman or an anchorman or newscaster from the 1980s"
         # response_format="mp3" is default, others include opus, aac, flac
         )
 
@@ -86,7 +87,7 @@ if __name__ == '__main__':
     # Setup basic logging for the __main__ test if not already configured
     if not logging.getLogger().handlers:
         logging.basicConfig(
-            level=logging.DEBUG, 
+            level=logging.DEBUG,
             format="%(asctime)s - %(levelname)s - [%(module)s:%(lineno)d] - %(message)s",
             datefmt="%Y-%m-%d %H:%M:%S"
         )
@@ -97,8 +98,8 @@ if __name__ == '__main__':
         logger.warning("OpenAI API key not configured or client not initialized. Cannot run TTS test.")
     else:
         logger.info(f"Using TTS Voice Model: {TTS_VOICE_MODEL}")
-        sample_text = "Good morning! Here are today's top news stories:\n\n**1. President Trump Begins Middle East Tour in Saudi Arabia**\n\nPresident Donald Trump has commenced a four-day visit to the Middle East, starting in Saudi Arabia. The agenda includes discussions on Iran's nuclear program, the Gaza conflict, and bolstering U.S.-Saudi business ties, with potential Saudi investments in the U.S. estimated at up to $600 billion. Trump's envoy, Steve Witkoff, is also engaging with families of hostages in Israel, following the recent release of American-Israeli hostage Edan Alexander. ([apnews.com](https://apnews.com/article/26f9104dd733e07136ff255c6917d66f?utm_source=openai))\n\n**2. EPA Announces Major Deregulation Efforts**\n\nThe Environmental Protection Agency has initiated the largest deregulation action in U.S. history, aiming to roll back numerous water and air quality regulations and defund billions allocated to green energy initiatives. This move includes reconsidering the \"endangerment finding,\" which classifies greenhouse gases as a public health threat. EPA Administrator Lee Zeldin stated, \"Today, the green new scam ends.\" ([democracynow.org](https://www.democracynow.org/2025/3/13/headlines?utm_source=openai))\n\n**3. Russia Reclaims Territory Amid Ceasefire Talks**\n\nRussian forces have recaptured nearly 90% of the territory in the Kursk region that was previously seized by Ukraine. This development comes as U.S. special envoy Steve Witkoff arrives in Moscow for ceasefire negotiations. Russia has presented demands including Ukraine's non-membership in NATO and international recognition of Crimea and other regions as Russian territory. ([democracynow.org](https://www.democracynow.org/2025/3/13/headlines?utm_source=openai))\n\n**4. Record-Breaking Tornado Outbreak in the U.S.**\n\nBetween March 13 and 16, the United States experienced a historic tornado outbreak, with 117 tornadoes reported across the Midwest and Eastern regions. This event is the largest on record for March, resulting in 43 fatalities and over 247 injuries. The outbreak caused significant damage and power outages affecting more than 670,000 residents. ([en.wikipedia.org](https://en.wikipedia.org/wiki/Tornado_outbreak_of_March_13%E2%80%9316%2C_2025?utm_source=openai))\n\n**5. Stock Market Update**\n\nAs of 1:31 PM UTC, the S&P 500 (SPY) is trading at $583.10, up 0.02% from the previous close. The Dow Jones Industrial Average (DIA) stands at $422.69, down 0.36%, while the Nasdaq-100 (QQQ) is at $508.84, up 0.20%. In the tech sector, Apple Inc. (AAPL) is trading at $211.18, up 0.19%, Microsoft Corp. (MSFT) at $446.30, down 0.66%, and Alphabet Inc. (GOOGL) at $158.13, down 0.21%.\n\nStay informed and have a great day!"
-        
+        sample_text = "Good morning, San Diego! I'm Ron Burgundy, and here's what's happening in our world today, May 14, 2025.\n\n**1. Markets on a Roller Coaster Ride**\n\nGlobal markets have been on a wild ride lately, but there's a glimmer of hope. After six weeks of tariff turmoil, U.S. stocks are back in the green for the year. Tech giants like Nvidia and AMD are leading the charge, thanks to massive AI deals in the Middle East. Nvidia's stock soared, pushing its valuation to a staggering $3 trillion. That's trillion with a 'T'! ([reuters.com](https://www.reuters.com/markets/europe/global-markets-view-europe-2025-05-14/?utm_source=openai))\n\n**2. Trade Talks Heating Up**\n\nPresident Trump is hinting at direct negotiations with China's President Xi Jinping to hammer out a trade deal. Meanwhile, potential agreements with India, Japan, and South Korea are still in the pipeline. It's like a high-stakes game of international poker, and everyone's waiting to see who blinks first. ([reuters.com](https://www.reuters.com/markets/europe/global-markets-view-europe-2025-05-14/?utm_source=openai))\n\n**3. Tech Stocks Take a Tumble**\n\nAfter riding high on the AI boom, tech stocks are facing a reality check. Market uncertainty and questions about the future of artificial intelligence have led to a significant drop in stock prices for major tech companies. It's a reminder that what goes up must come down—unless you're a helium balloon, of course. ([drydenwire.com](https://drydenwire.com/news/morning-headlines-friday-mar-14-2025/?utm_source=openai))\n\n**4. American Airlines Emergency Landing**\n\nAn American Airlines flight made an emergency landing at Denver International Airport after an engine issue caused a fire. Passengers had to evacuate using emergency slides, and 12 people were taken to the hospital with minor injuries. Talk about a flight to remember! ([drydenwire.com](https://drydenwire.com/news/morning-headlines-friday-mar-14-2025/?utm_source=openai))\n\n**5. Newsmax Settles Defamation Suit**\n\nNewsmax Media has paid $40 million to settle allegations that it defamed Smartmatic by reporting false claims about the 2020 U.S. election. It's a hefty price tag for spreading misinformation—perhaps a lesson in thinking before you speak. ([drydenwire.com](https://drydenwire.com/news/morning-headlines-friday-mar-14-2025/?utm_source=openai))\n\n**And now, a quick look at the weather:**\n\nIn sunny San Diego, it's currently 67°F (19°C) and, you guessed it, sunny. Today's high will be 69°F (21°C) with a low of 56°F (13°C). Perfect weather for a beach day or, if you're like me, a scotch on the rocks.\n\nStay classy, San Diego."
+
         test_output_dir = os.path.join("test_output/test_audio_output") # TEMP_AUDIO_DIR from alarm_handler might be better
         if not os.path.exists(test_output_dir):
             try:
@@ -106,15 +107,15 @@ if __name__ == '__main__':
                 logger.info(f"Created directory for TTS test output: {test_output_dir}")
             except Exception as e_mkdir_test:
                 logger.error(f"Could not create test output directory {test_output_dir}: {e_mkdir_test}", exc_info=True)
-                test_output_dir = "." 
-        
+                test_output_dir = "."
+
         test_filename = "tts_direct_test_output.mp3"
         full_output_path = os.path.join(test_output_dir, test_filename)
-        
+
         logger.info(f"Attempting to save speech to: {full_output_path}")
-        
+
         success = text_to_speech_openai(sample_text, full_output_path)
-        
+
         if success:
             logger.info(f"TTS test successful. Audio saved to {full_output_path}")
         else:
