@@ -177,7 +177,7 @@ if __name__ == '__main__':
     if not GPIO_LIB_AVAILABLE:
         logger.critical("gpiozero is not available. Aborting hardware test.")
         # exit(1) # Don't exit if just importing, allow script to be imported elsewhere
-        return # Return if called as __main__ and gpiozero missing
+        return  # Return if called as __main__ and gpiozero missing
 
     class MockAlarmManager:
         def stop_active_alarms(self):
@@ -225,7 +225,7 @@ if __name__ == '__main__':
     if not hw_manager._stop_alarm_button:
         logger.error("Failed to set up the stop alarm button in HardwareManager. Exiting test.")
         # exit(1) # Don't exit if just importing
-        return # Return if called as __main__ and button setup failed
+        return  # Return if called as __main__ and button setup failed
 
 
     logger.info("Hardware Stop Alarm button is set up.")
