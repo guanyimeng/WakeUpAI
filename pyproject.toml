@@ -16,6 +16,7 @@ openai = "^1.0.0" # For OpenAI API for TTS and feeds
 gunicorn = { version = "^21.2.0", optional = true } # For production web server
 gpiozero = "^2.0.1"
 schedule = "^1.2.2"
+lgpio = "^0.2.2.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.0"
