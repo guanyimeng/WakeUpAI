@@ -62,7 +62,7 @@ def text_to_speech_openai(text_input: str, output_filepath: str) -> bool:
             model="gpt-4o-mini-tts",      # Standard quality, good for most cases. "tts-1-hd" for higher quality.
             voice=TTS_VOICE_MODEL, # From config.py, e.g., "alloy"
             input=text_input,
-            instructions="Speak like Ron Burgundy from Anchorman or an anchorman or newscaster from the 1980s"
+            instructions="Speak in the tone and style of Ron Burgundy from the movie Anchorman or an anchorman or newscaster from the 1980s, with a hint of energy and humor"
         # response_format="mp3" is default, others include opus, aac, flac
         )
 
