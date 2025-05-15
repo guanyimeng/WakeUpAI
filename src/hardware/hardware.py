@@ -37,7 +37,7 @@ if not IS_RASPBERRY_PI or not GPIOZeroButton:
     logger.info("Not a Raspberry Pi (or gpiozero not available/forced off). Mocking GPIO library.")
 
     class MockButton:
-        def __init__(self, pin, pull_up=True, bounce_time=None):
+        def __init__(self, pin, pull_up=False, bounce_time=None):
             self.pin = pin
             self.pull_up = pull_up
             self.bounce_time = bounce_time
@@ -149,7 +149,7 @@ class HardwareManager:
                 if pin > 0:
                     btn = GPIOZeroButton(
                         pin,
-                        pull_up=True,
+                        pull_up=False, # Assuming an external pull-down resistor since you mentioned a resistor
                         bounce_time=DEBOUNCE_TIME
                     )
                     btn.when_pressed = callback_func
