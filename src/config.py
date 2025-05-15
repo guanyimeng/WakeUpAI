@@ -60,9 +60,9 @@ WEB_UI_PORT = int(os.getenv("WEB_UI_PORT", 8000))
 # --- Hardware Configuration (Raspberry Pi - GPIO pins) ---
 # These are placeholders and depend on your actual wiring.
 # Using BCM numbering convention for GPIO pins.
-BUTTON_STOP_ALARM_PIN = int(os.getenv("BUTTON_STOP_ALARM_PIN", 0)) # Example GPIO pin
-BUTTON_SNOOZE_PIN = int(os.getenv("BUTTON_SNOOZE_PIN", 0))         # Example GPIO pin
-BUTTON_SPEAK_TIME_PIN = int(os.getenv("BUTTON_SPEAK_TIME_PIN", 0))   # Example GPIO pin
+BUTTON_STOP_ALARM_PIN = int(os.getenv("BUTTON_STOP_ALARM_PIN", 17)) # Set to GPIO 17 for Stop Alarm
+BUTTON_SNOOZE_PIN = int(os.getenv("BUTTON_SNOOZE_PIN", 0))         # Disabled
+BUTTON_SPEAK_TIME_PIN = int(os.getenv("BUTTON_SPEAK_TIME_PIN", 0))   # Disabled
 
 # --- Alarms Configuration ---
 # Defaulting to a path inside /app/data/ for easier Docker volume mounting
@@ -95,7 +95,7 @@ if __name__ == '__main__':
     logger.info(f"Web UI Host: {WEB_UI_HOST}")
     logger.info(f"Web UI Port: {WEB_UI_PORT}")
     logger.info(f"Alarms JSON Path: {ALARMS_FILE_PATH}")
-    logger.info(f"Button Pins (Enable/Disable, Snooze, Speak Time): {BUTTON_ENABLE_DISABLE_PIN}, {BUTTON_SNOOZE_PIN}, {BUTTON_SPEAK_TIME_PIN}")
+    logger.info(f"Button Pins (Stop Alarm, Snooze, Speak Time): {BUTTON_STOP_ALARM_PIN}, {BUTTON_SNOOZE_PIN}, {BUTTON_SPEAK_TIME_PIN}")
     logger.info("-------------------------------------------------")
     logger.info("To test .env loading, ensure a .env file exists in the project root (e.g., e:\\Dev\\WakeUpAI\\.env)")
     logger.info("Example .env content: OPENAI_API_KEY=\"your_key\" LOG_LEVEL=\"DEBUG\"")
