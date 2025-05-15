@@ -76,8 +76,8 @@ def main():
     # for alarm sounds. However, TTS for speaking time still needs a tts function.
     hardware_manager = HardwareManager(
         alarm_manager=alarm_scheduler, # Hardware manager will call alarm_scheduler.stop_active_alarms()
-        tts_speak_function=text_to_speech_openai, # For speak time, etc.
-        audio_play_function=None # Alarm audio is handled by AlarmTask in newalarm.py
+        tts_speak_function=text_to_speech_openai # This function writes to a file
+        # audio_play_function is no longer passed
     )
     hardware_manager.setup_gpio() # Setup GPIO buttons
     

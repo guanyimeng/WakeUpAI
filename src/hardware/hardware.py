@@ -9,7 +9,7 @@ try:
     from gpiozero import Button as GPIOZeroButton
     GPIO_LIB_AVAILABLE = True
     GPIO_LIB = "gpiozero"
-    logger = logging.getLogger(__name__) # Initialize logger early if gpiozero is found
+    logger = logging.getLogger(__name__)
     logger.info("gpiozero.Button loaded successfully.")
 except ImportError as e:
     # Initialize logger here if not already, to report the critical error
@@ -30,7 +30,28 @@ except ImportError as e:
             def method(*args, **kwargs):
                 logger.error(f"gpiozero not available, {name} called but will do nothing.")
             return method
-    GPIOZeroButton = GPIOZeroButtonPlaceholder 
+    GPIOZeroButton = GPIOZeroButtonPlaceholder
+
+# Added imports
+import tempfile
+# import os # os is already imported at the top of the file
+
+# Import for playing TTS feedback
+try:
+    from .audio_player import play_audio_file
+except ImportError:
+    # Fallback for direct execution if .audio_player is not found (e.g. running __main__)
+    # This assumes audio_player.py is in the same directory for direct run.
+    # For the main application (main.py), the relative import should work.
+    try:
+        from audio_player import play_audio_file
+        logger.info("audio_player.py imported directly for HardwareManager feedback.")
+    except ImportError:
+        logger.error("HardwareManager: play_audio_file could not be imported for TTS feedback.")
+        def play_audio_file(*args, **kwargs): # Placeholder if import fails
+            logger.error("play_audio_file is not available, cannot play TTS feedback.")
+            return False
+
 
 from src.config import (
     BUTTON_STOP_ALARM_PIN
@@ -39,32 +60,67 @@ from src.config import (
 DEBOUNCE_TIME = 0.3
 
 class HardwareManager:
-    def __init__(self, alarm_manager, tts_speak_function, audio_play_function=None):
+    def __init__(self, alarm_manager, tts_speak_function): # Removed audio_play_function
         self.alarm_manager = alarm_manager
         self.tts_speak_function = tts_speak_function
-        self.audio_play_function = audio_play_function 
+        # self.audio_play_function = None # Removed
         self.system_enabled = True 
         self._stop_alarm_button = None
         logger.info("HardwareManager initialized for stop alarm button only.")
+
+    def _speak_feedback(self, text_to_say: str):
+        if not self.tts_speak_function:
+            logger.warning("HardwareManager: No TTS function provided, cannot speak feedback.")
+            return
+
+        temp_audio_file = None
+        try:
+            # Create a temporary file to store the TTS output
+            with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as tmpfile:
+                temp_audio_file = tmpfile.name
+            
+            # Generate speech to the temporary file
+            # Assuming tts_speak_function is text_to_speech_openai which needs output_filepath
+            tts_success = self.tts_speak_function(text_input=text_to_say, output_filepath=temp_audio_file)
+            
+            if tts_success:
+                logger.info(f"HardwareManager: Playing TTS feedback: '{text_to_say}' from {temp_audio_file}")
+                # Play the generated audio file.
+                # Note: play_audio_file from audio_player can take stop_event,
+                # but for short feedback, it might not be necessary.
+                # If feedback sounds can be long, consider passing a stop_event here.
+                play_audio_file(filepath=temp_audio_file, wait_for_completion=True)
+            else:
+                logger.warning(f"HardwareManager: TTS generation failed for: '{text_to_say}'")
+
+        except Exception as e:
+            logger.error(f"HardwareManager: Error in TTS feedback for '{text_to_say}': {e}", exc_info=True)
+        finally:
+            if temp_audio_file and os.path.exists(temp_audio_file):
+                try:
+                    os.remove(temp_audio_file)
+                    logger.debug(f"HardwareManager: Cleaned up TTS temp file: {temp_audio_file}")
+                except Exception as e_del:
+                    logger.error(f"HardwareManager: Error deleting TTS temp file {temp_audio_file}: {e_del}")
 
     def handle_stop_alarm_button(self):
         time.sleep(0.05) 
         logger.info("Button Pressed: Stop Alarm detected.")
         if not self.system_enabled:
             logger.info("System is disabled. Stop alarm button ignored.")
-            if self.tts_speak_function: self.tts_speak_function("System disabled")
+            self._speak_feedback("System disabled")
             return
 
         logger.info("ACTION: Requesting to stop sounding alarms.")
         if hasattr(self.alarm_manager, 'stop_active_alarms'):
             stopped_any = self.alarm_manager.stop_active_alarms()
             if stopped_any:
-                if self.tts_speak_function:
-                     self.tts_speak_function("Alarm stopped.")
+                self._speak_feedback("Alarm stopped.")
+            # else: # Optionally, provide feedback if no alarm was actually sounding
+                # self._speak_feedback("No active alarm to stop.")
         else:
             logger.warning("AlarmManager (AlarmScheduler) does not have 'stop_active_alarms' method.")
-            if self.tts_speak_function:
-                self.tts_speak_function("Could not stop alarm.")
+            self._speak_feedback("Could not stop alarm.")
 
     def setup_gpio(self):
         if not GPIO_LIB_AVAILABLE:
@@ -113,23 +169,35 @@ if __name__ == '__main__':
             handlers=[logging.StreamHandler()] # Explicitly add handler
         )
     # Re-fetch logger in case basicConfig was called by the import block or here
-    logger = logging.getLogger(__name__) 
+    logger = logging.getLogger(__name__)
+
 
     logger.info("--- Hardware Module Test for Raspberry Pi (Real Button) ---")
 
     if not GPIO_LIB_AVAILABLE:
         logger.critical("gpiozero is not available. Aborting hardware test.")
-        exit(1)
+        # exit(1) # Don't exit if just importing, allow script to be imported elsewhere
+        return # Return if called as __main__ and gpiozero missing
 
     class MockAlarmManager:
         def stop_active_alarms(self):
             logger.info("MockAlarmManager: stop_active_alarms() called by button press.")
-            # In a real scenario, this would return True if an alarm was actually playing and then stopped.
-            # For this test, we'll assume it always "stops" something for feedback.
             return True
 
-    def mock_tts(text):
-        logger.info(f"MockTTS: Would speak -> '{text}'")
+    # Mock tts_speak_function for testing HardwareManager
+    # This mock needs to mimic the signature that _speak_feedback expects
+    # from text_to_speech_openai: (text_input: str, output_filepath: str) -> bool
+    def mock_tts_generator(text_input: str, output_filepath: str) -> bool:
+        logger.info(f"MockTTSGenerator: Received text: '{text_input}', would write to: {output_filepath}")
+        # Simulate successful TTS file creation
+        try:
+            with open(output_filepath, 'w') as f:
+                f.write(f"This is a mock audio file for '{text_input}'.")
+            logger.info(f"MockTTSGenerator: Successfully created mock file at {output_filepath}")
+            return True
+        except Exception as e:
+            logger.error(f"MockTTSGenerator: Failed to create mock file: {e}")
+            return False
 
     # Import config here, inside __main__, to ensure BUTTON_STOP_ALARM_PIN is fresh
     try:
@@ -147,12 +215,18 @@ if __name__ == '__main__':
     logger.info(f"Test will use GPIO pin {TEST_BUTTON_PIN} for the Stop Alarm button.")
     logger.info(f"Ensure a button is connected to GPIO {TEST_BUTTON_PIN} (with a pull-down resistor). Action is on press.")
 
-    hw_manager = HardwareManager(alarm_manager=MockAlarmManager(), tts_speak_function=mock_tts)
-    hw_manager.setup_gpio() # This will use TEST_BUTTON_PIN from src.config
+    # Note: The original mock_tts just logged. The new mock_tts_generator simulates file creation
+    # because _speak_feedback now expects the TTS function to create a file.
+    # The play_audio_file mock above will handle the "playback" part for the test.
+
+    hw_manager = HardwareManager(alarm_manager=MockAlarmManager(), tts_speak_function=mock_tts_generator)
+    hw_manager.setup_gpio()
 
     if not hw_manager._stop_alarm_button:
         logger.error("Failed to set up the stop alarm button in HardwareManager. Exiting test.")
-        exit(1)
+        # exit(1) # Don't exit if just importing
+        return # Return if called as __main__ and button setup failed
+
 
     logger.info("Hardware Stop Alarm button is set up.")
     logger.info("Press the button connected to GPIO {} to test. Press Ctrl+C to exit test." .format(TEST_BUTTON_PIN))
