@@ -76,21 +76,40 @@ class AlarmTask:
 
         logger.info(f"Playing alarm audio for '{self.name}': {temp_audio_filepath}")
         
-        # Pass the stop event to the audio player
-        playback_success = play_audio_file(temp_audio_filepath)
+        playback_success = play_audio_file(
+            filepath=temp_audio_filepath, 
+            wait_for_completion=True, 
+            stop_event=self.stop_event
+        )
 
         if not playback_success:
-            logger.warning(f"Failed to play audio for '{self.name}' (File: {temp_audio_filepath}). Player might have logged more details or was interrupted.")
+            # If playback failed OR was stopped by user, this is false.
+            # We only play default or log generic failure if it wasn't a user-initiated stop.
+            if not self.stop_event.is_set():
+                logger.warning(f"Playback failed for '{self.name}' (File: {temp_audio_filepath}) and not due to user stop. Playing default sound if configured.")
+                self._play_default_sound() 
+            else:
+                logger.info(f"Playback for '{self.name}' was stopped by user request.")
+        else:
+            logger.info(f"Playback finished for '{self.name}'.")
 
-        # self._cleanup_audio_file(temp_audio_filepath)
+        self._cleanup_audio_file(temp_audio_filepath) # Cleanup in all cases after attempting to play generated audio
         self.is_active = False
         logger.info(f"--- Finished processing alarm: '{self.name}' ---")
 
     def _play_default_sound(self):
+        # This is a fallback, so it should also be interruptible if it's a long sound.
         default_sound_path = os.path.join("src", "default", "default_alarm_sound.mp3")
         if os.path.exists(default_sound_path):
-            logger.info(f"Playing default alarm sound for '{self.name}'.")
-            play_audio_file(default_sound_path)
+            if not self.stop_event.is_set(): # Don't start default if already stopping
+                logger.info(f"Playing default alarm sound for '{self.name}'.")
+                play_audio_file(
+                    filepath=default_sound_path, 
+                    wait_for_completion=True, # Make it blocking
+                    stop_event=self.stop_event  # Make it stoppable
+                )
+            else:
+                logger.info(f"Skipping default sound for '{self.name}' as stop event is already set.")
         else:
             logger.error(f"Default alarm sound not found at {default_sound_path}")
             
