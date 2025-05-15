@@ -72,12 +72,9 @@ def main():
     initialize_alarms()
 
     # Initialize HardwareManager
-    # The newalarm.py's AlarmScheduler handles its own audio, so we don't pass audio_play_function directly to HardwareManager
-    # for alarm sounds. However, TTS for speaking time still needs a tts function.
+    # HardwareManager no longer handles TTS feedback itself or other audio playback.
     hardware_manager = HardwareManager(
-        alarm_manager=alarm_scheduler, # Hardware manager will call alarm_scheduler.stop_active_alarms()
-        tts_speak_function=text_to_speech_openai, # For speak time, etc.
-        audio_play_function=None # Alarm audio is handled by AlarmTask in newalarm.py
+        alarm_manager=alarm_scheduler # Hardware manager will call alarm_scheduler.stop_active_alarms()
     )
     hardware_manager.setup_gpio() # Setup GPIO buttons
     

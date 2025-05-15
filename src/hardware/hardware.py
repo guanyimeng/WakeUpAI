@@ -9,7 +9,7 @@ try:
     from gpiozero import Button as GPIOZeroButton
     GPIO_LIB_AVAILABLE = True
     GPIO_LIB = "gpiozero"
-    logger = logging.getLogger(__name__) # Initialize logger early if gpiozero is found
+    logger = logging.getLogger(__name__)
     logger.info("gpiozero.Button loaded successfully.")
 except ImportError as e:
     # Initialize logger here if not already, to report the critical error
@@ -30,7 +30,9 @@ except ImportError as e:
             def method(*args, **kwargs):
                 logger.error(f"gpiozero not available, {name} called but will do nothing.")
             return method
-    GPIOZeroButton = GPIOZeroButtonPlaceholder 
+    GPIOZeroButton = GPIOZeroButtonPlaceholder
+
+# Removed tempfile and play_audio_file imports previously added for _speak_feedback
 
 from src.config import (
     BUTTON_STOP_ALARM_PIN
@@ -39,32 +41,33 @@ from src.config import (
 DEBOUNCE_TIME = 0.3
 
 class HardwareManager:
-    def __init__(self, alarm_manager, tts_speak_function, audio_play_function=None):
+    def __init__(self, alarm_manager): # Removed tts_speak_function
         self.alarm_manager = alarm_manager
-        self.tts_speak_function = tts_speak_function
-        self.audio_play_function = audio_play_function 
+        # self.tts_speak_function = None # Removed
         self.system_enabled = True 
         self._stop_alarm_button = None
-        logger.info("HardwareManager initialized for stop alarm button only.")
+        logger.info("HardwareManager initialized for stop alarm button only (no TTS feedback).")
+
+    # Removed _speak_feedback method entirely
 
     def handle_stop_alarm_button(self):
         time.sleep(0.05) 
         logger.info("Button Pressed: Stop Alarm detected.")
         if not self.system_enabled:
             logger.info("System is disabled. Stop alarm button ignored.")
-            if self.tts_speak_function: self.tts_speak_function("System disabled")
+            # No spoken feedback
             return
 
         logger.info("ACTION: Requesting to stop sounding alarms.")
         if hasattr(self.alarm_manager, 'stop_active_alarms'):
             stopped_any = self.alarm_manager.stop_active_alarms()
             if stopped_any:
-                if self.tts_speak_function:
-                     self.tts_speak_function("Alarm stopped.")
+                logger.info("Alarm stop request processed (alarm was active).") # Log instead of speak
+            else:
+                logger.info("Alarm stop request processed (no alarm was active).") # Log instead of speak
         else:
             logger.warning("AlarmManager (AlarmScheduler) does not have 'stop_active_alarms' method.")
-            if self.tts_speak_function:
-                self.tts_speak_function("Could not stop alarm.")
+            # No spoken feedback
 
     def setup_gpio(self):
         if not GPIO_LIB_AVAILABLE:
@@ -113,23 +116,21 @@ if __name__ == '__main__':
             handlers=[logging.StreamHandler()] # Explicitly add handler
         )
     # Re-fetch logger in case basicConfig was called by the import block or here
-    logger = logging.getLogger(__name__) 
+    logger = logging.getLogger(__name__)
 
-    logger.info("--- Hardware Module Test for Raspberry Pi (Real Button) ---")
+
+    logger.info("--- Hardware Module Test for Raspberry Pi (Real Button, No TTS Feedback) ---")
 
     if not GPIO_LIB_AVAILABLE:
         logger.critical("gpiozero is not available. Aborting hardware test.")
-        exit(1)
+        return
 
     class MockAlarmManager:
         def stop_active_alarms(self):
             logger.info("MockAlarmManager: stop_active_alarms() called by button press.")
-            # In a real scenario, this would return True if an alarm was actually playing and then stopped.
-            # For this test, we'll assume it always "stops" something for feedback.
-            return True
+            return True # Simulate that an alarm was indeed stopped
 
-    def mock_tts(text):
-        logger.info(f"MockTTS: Would speak -> '{text}'")
+    # mock_tts_generator is no longer needed as HardwareManager doesn't use TTS
 
     # Import config here, inside __main__, to ensure BUTTON_STOP_ALARM_PIN is fresh
     try:
@@ -147,14 +148,16 @@ if __name__ == '__main__':
     logger.info(f"Test will use GPIO pin {TEST_BUTTON_PIN} for the Stop Alarm button.")
     logger.info(f"Ensure a button is connected to GPIO {TEST_BUTTON_PIN} (with a pull-down resistor). Action is on press.")
 
-    hw_manager = HardwareManager(alarm_manager=MockAlarmManager(), tts_speak_function=mock_tts)
-    hw_manager.setup_gpio() # This will use TEST_BUTTON_PIN from src.config
+    # HardwareManager is now instantiated without tts_speak_function
+    hw_manager = HardwareManager(alarm_manager=MockAlarmManager())
+    hw_manager.setup_gpio()
 
     if not hw_manager._stop_alarm_button:
         logger.error("Failed to set up the stop alarm button in HardwareManager. Exiting test.")
-        exit(1)
+        return
 
-    logger.info("Hardware Stop Alarm button is set up.")
+
+    logger.info("Hardware Stop Alarm button is set up (no TTS feedback will occur).")
     logger.info("Press the button connected to GPIO {} to test. Press Ctrl+C to exit test." .format(TEST_BUTTON_PIN))
 
     try:
