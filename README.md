@@ -1,5 +1,7 @@
 # WakeUpAI
 
+Don't forget to star it if you like this project!
+
 ## Description
 A Raspberry Pi based Alarm, using OpenAI API to generate feeds and speak them out as Alarm sounds to wake up people softly with their interested content.
 
