@@ -99,7 +99,7 @@ class AlarmTask:
 
     def _play_default_sound(self):
         # This is a fallback, so it should also be interruptible if it's a long sound.
-        default_sound_path = os.path.join("src", "default", "Woke Up Cool Today.mp3")
+        default_sound_path = os.path.join("src", "default", "Woke_Up_Cool_Today.mp3")
         if os.path.exists(default_sound_path):
             if not self.stop_event.is_set(): # Don't start default if already stopping
                 logger.info(f"Playing default alarm sound for '{self.name}'.")
