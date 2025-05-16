@@ -53,14 +53,14 @@ def initialize_alarms():
     )
 
     alarm_scheduler.add_alarm(
-        alarm_time_str=(now + datetime.timedelta(minutes=3)).strftime("%H:%M"),
+        alarm_time_str=(now + datetime.timedelta(minutes=4)).strftime("%H:%M"),
         name="Anthropology Facts",
         feed_type="topic_facts",
-        feed_options={"topic": "Anthropology"}
+        feed_options={"topic": "Fun fact in Anthropology"}
     )
 
     alarm_scheduler.add_alarm(
-        alarm_time_str=(now + datetime.timedelta(minutes=5)).strftime("%H:%M"),
+        alarm_time_str=(now + datetime.timedelta(minutes=7)).strftime("%H:%M"),
         name="Wrong Input",
         feed_type="wrong_input",
         feed_options={}
