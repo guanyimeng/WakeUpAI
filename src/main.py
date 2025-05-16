@@ -54,7 +54,7 @@ def initialize_alarms():
 
     alarm_scheduler.add_alarm(
         alarm_time_str=(now + datetime.timedelta(minutes=3)).strftime("%H:%M"),
-        name="Tech Facts",
+        name="Anthropology Facts",
         feed_type="topic_facts",
         feed_options={"topic": "Anthropology"}
     )
