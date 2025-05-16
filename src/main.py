@@ -56,7 +56,14 @@ def initialize_alarms():
         alarm_time_str=(now + datetime.timedelta(minutes=3)).strftime("%H:%M"),
         name="Tech Facts",
         feed_type="topic_facts",
-        feed_options={"topic": "latest advancements in AI"}
+        feed_options={"topic": "Anthropology"}
+    )
+
+    alarm_scheduler.add_alarm(
+        alarm_time_str=(now + datetime.timedelta(minutes=5)).strftime("%H:%M"),
+        name="Wrong Input",
+        feed_type="wrong_input",
+        feed_options={}
     )
     alarm_scheduler.list_alarms()
 

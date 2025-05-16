@@ -102,16 +102,16 @@ if __name__ == '__main__':
     logger.info("Audio_player.py script running for tests.")
     
     # Determine the correct base directory to find the default alarm sound
-    # Assuming this script is in src/hardware, and default_alarm_sound.mp3 is in src/default
+    # Assuming this script is in src/hardware, and Woke Up Cool Today.mp3 is in src/default
     try:
         script_dir = os.path.dirname(os.path.abspath(__file__))
         base_dir = os.path.dirname(script_dir) # This should be the 'src' directory
-        test_file = os.path.join(base_dir, "default", "default_alarm_sound.mp3")
+        test_file = os.path.join(base_dir, "default", "Woke Up Cool Today.mp3")
     except NameError: # __file__ is not defined (e.g. in an interactive session not running as script)
         logger.warning("Could not determine test file path using __file__, attempting relative path.")
         # Fallback for environments where __file__ might not be defined as expected
         # This might be fragile depending on the CWD when the script is run.
-        test_file = os.path.join("src", "default", "default_alarm_sound.mp3") 
+        test_file = os.path.join("src", "default", "Woke Up Cool Today.mp3") 
 
     logger.info(f"Looking for test audio file at: {test_file}")
     
