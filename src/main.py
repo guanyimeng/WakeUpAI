@@ -43,7 +43,7 @@ def initialize_alarms():
     # Example: Add a daily news alarm 1 minute from now for testing
     # In a real scenario, these would come from a config file or database
     now = datetime.datetime.now()
-    test_alarm_time = (now + datetime.timedelta(minutes=1)).strftime("%H:%M")
+    test_alarm_time = (now + datetime.timedelta(minutes=1)).strftime("%H:%M") # Format as HH:MM, e,g, 14:30
     
     alarm_scheduler.add_alarm(
         alarm_time_str=test_alarm_time, 
@@ -53,14 +53,14 @@ def initialize_alarms():
     )
 
     alarm_scheduler.add_alarm(
-        alarm_time_str=(now + datetime.timedelta(minutes=4)).strftime("%H:%M"),
+        alarm_time_str=(now + datetime.timedelta(minutes=3)).strftime("%H:%M"),
         name="Fun Facts Birds",
         feed_type="topic_facts",
         feed_options={"topic": "Fun fact about birds"}
     )
 
     alarm_scheduler.add_alarm(
-        alarm_time_str=(now + datetime.timedelta(minutes=7)).strftime("%H:%M"),
+        alarm_time_str=(now + datetime.timedelta(minutes=6)).strftime("%H:%M"),
         name="Wrong Input",
         feed_type="wrong_input",
         feed_options={}
