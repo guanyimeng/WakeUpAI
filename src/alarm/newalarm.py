@@ -8,6 +8,8 @@ from ..hardware.audio_player import play_audio_file, stop_audio
 from ..config import OPENAI_API_KEY
 import os
 import datetime
+import uuid
+from .persistence import AlarmPersistence
 
 logger = logging.getLogger(__name__) 
 
@@ -18,11 +20,13 @@ if not os.path.exists(TEMP_AUDIO_DIR):
         logger.info(f"Created temporary audio directory: {TEMP_AUDIO_DIR}")
     except Exception as e:
         logger.critical(f"Could not create temporary audio directory {TEMP_AUDIO_DIR}: {e}", exc_info=True)
+        import tempfile
         TEMP_AUDIO_DIR = tempfile.gettempdir()
         logger.warning(f"Using system temp directory as fallback for temp audio: {TEMP_AUDIO_DIR}")
 
 class AlarmTask:
-    def __init__(self, alarm_time, name, feed_type="daily_news", feed_options=None):
+    def __init__(self, alarm_time, name, feed_type="daily_news", feed_options=None, alarm_id=None):
+        self.id = alarm_id or str(uuid.uuid4())
         self.alarm_time = alarm_time
         self.name = name
         self.feed_type = feed_type
@@ -154,13 +158,15 @@ class AlarmTask:
 
 
 class AlarmScheduler:
-    def __init__(self):
+    def __init__(self, persistence_file_path=None):
         self.alarms = [] # List of AlarmTask objects
         self._scheduler_thread = None
         self._stop_scheduler_event = Event()
         self._active_alarm_tasks = [] # Keep track of tasks that are currently sounding
+        self.persistence = AlarmPersistence(persistence_file_path)
+        self.load_alarms_from_file()
 
-    def add_alarm(self, alarm_time_str: str, name: str, feed_type: str = "daily_news", feed_options: dict = None):
+    def add_alarm(self, alarm_time_str: str, name: str, feed_type: str = "daily_news", feed_options: dict = None, alarm_id: str = None):
         try:
             # Validate time format
             datetime.datetime.strptime(alarm_time_str, "%H:%M")
@@ -168,10 +174,11 @@ class AlarmScheduler:
             logger.error(f"Invalid time format for alarm '{name}': {alarm_time_str}. Please use HH:MM.")
             return None
             
-        task = AlarmTask(alarm_time_str, name, feed_type, feed_options)
+        task = AlarmTask(alarm_time_str, name, feed_type, feed_options, alarm_id)
         task.schedule()
         self.alarms.append(task)
         logger.info(f"Alarm '{name}' added and scheduled for {alarm_time_str}.")
+        self.save_alarms_to_file()
         return task
 
     def remove_alarm(self, name: str):
@@ -180,8 +187,63 @@ class AlarmScheduler:
                 task.cancel()
                 self.alarms.remove(task)
                 logger.info(f"Alarm '{name}' removed.")
-                return
+                self.save_alarms_to_file()
+                return True
         logger.warning(f"Alarm '{name}' not found for removal.")
+        return False
+    
+    def remove_alarm_by_id(self, alarm_id: str):
+        for task in self.alarms:
+            if task.id == alarm_id:
+                task.cancel()
+                self.alarms.remove(task)
+                logger.info(f"Alarm with ID '{alarm_id}' removed.")
+                self.save_alarms_to_file()
+                return True
+        logger.warning(f"Alarm with ID '{alarm_id}' not found for removal.")
+        return False
+    
+    def get_alarm_by_id(self, alarm_id: str):
+        for task in self.alarms:
+            if task.id == alarm_id:
+                return task
+        return None
+    
+    def update_alarm(self, alarm_id: str, alarm_time_str: str = None, name: str = None, 
+                    feed_type: str = None, feed_options: dict = None, enabled: bool = None):
+        task = self.get_alarm_by_id(alarm_id)
+        if not task:
+            logger.warning(f"Alarm with ID '{alarm_id}' not found for update.")
+            return False
+        
+        # Cancel current scheduling
+        task.cancel()
+        
+        # Update fields if provided
+        if alarm_time_str is not None:
+            try:
+                datetime.datetime.strptime(alarm_time_str, "%H:%M")
+                task.alarm_time = alarm_time_str
+            except ValueError:
+                logger.error(f"Invalid time format: {alarm_time_str}. Please use HH:MM.")
+                return False
+        
+        if name is not None:
+            task.name = name
+        if feed_type is not None:
+            task.feed_type = feed_type
+        if feed_options is not None:
+            task.feed_options = feed_options
+        if enabled is not None:
+            task.enabled = enabled
+        
+        # Reschedule if enabled
+        if task.enabled:
+            task.schedule()
+        
+        logger.info(f"Alarm '{task.name}' updated.")
+        self.save_alarms_to_file()
+        return True
         
     def stop_active_alarms(self):
         logger.info("Stopping all active alarms...")
@@ -232,6 +294,38 @@ class AlarmScheduler:
         print("Scheduled alarms:")
         for task in self.alarms:
             print(f"- {task.name} at {task.alarm_time} (Next run: {task.job.next_run if task.job else 'N/A'})")
+    
+    def save_alarms_to_file(self):
+        """Save current alarms to persistent storage."""
+        alarm_dicts = []
+        for task in self.alarms:
+            alarm_dicts.append(self.persistence.alarm_to_dict(task))
+        return self.persistence.save_alarms(alarm_dicts)
+    
+    def load_alarms_from_file(self):
+        """Load alarms from persistent storage."""
+        alarm_dicts = self.persistence.load_alarms()
+        for alarm_dict in alarm_dicts:
+            try:
+                alarm_data = self.persistence.dict_to_alarm_data(alarm_dict)
+                task = AlarmTask(
+                    alarm_time=alarm_data["alarm_time_str"],
+                    name=alarm_data["name"],
+                    feed_type=alarm_data["feed_type"],
+                    feed_options=alarm_data["feed_options"],
+                    alarm_id=alarm_data["id"]
+                )
+                task.enabled = alarm_data["enabled"]
+                if task.enabled:
+                    task.schedule()
+                self.alarms.append(task)
+                logger.info(f"Loaded alarm '{task.name}' from file.")
+            except Exception as e:
+                logger.error(f"Failed to load alarm from data {alarm_dict}: {e}")
+    
+    def get_alarms_data(self):
+        """Get all alarms as dictionaries for API responses."""
+        return [self.persistence.alarm_to_dict(task) for task in self.alarms]
 
 
 if __name__ == '__main__':
